@@ -4,5 +4,27 @@
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"
     },
-    "displayName": "The PAC App"
+    "displayName": "The PAC App",
+    "dependencies": {
+        "cordova-android": "^6.4.0",
+        "cordova-plugin-console": "~1.0.3",
+        "cordova-plugin-dialogs": "~1.2.1",
+        "cordova-plugin-statusbar": "~2.1.3",
+        "cordova-plugin-whitelist": "~1.2.1",
+        "phonegap-plugin-push": "~1.8.0"
+    },
+    "cordova": {
+        "plugins": {
+            "cordova-plugin-statusbar": {},
+            "phonegap-plugin-push": {
+                "SENDER_ID": "XXXXXXX"
+            },
+            "cordova-plugin-console": {},
+            "cordova-plugin-dialogs": {},
+            "cordova-plugin-whitelist": {}
+        },
+        "platforms": [
+            "android"
+        ]
+    }
 }
