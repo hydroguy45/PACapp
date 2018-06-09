@@ -4,6 +4,8 @@ from googleapiclient import discovery
 from apiclient.discovery import build
 from httplib2 import Http
 from oauth2client import file, client, tools
+import time
+import json
 
 # Setup the Sheets API
 SCOPES = 'https://www.googleapis.com/auth/spreadsheets.readonly'
@@ -13,8 +15,8 @@ if not creds or creds.invalid:
 	flow = client.flow_from_clientsecrets('client_secret.json', SCOPES)
 	creds = tools.run_flow(flow, store)
 service = discovery.build('sheets', 'v4', credentials=creds)
-
 spreadsheet_id = '1vGwybPul8-9r-u1Oj_5sHO6RxG-fqyNTTmcU7ajfBd0'  
+queries = 0
 
 def getPACData():
 	print("[Attempting to load & Parse PAC data]")
@@ -136,6 +138,11 @@ def getGroupData(name):
 	return group
 
 def getRange(name, lowerEnd, higherEnd, startingRow, endingRow):
+	global queries
+	queries = queries + 1
+	if queries == 90:
+		time.sleep(100)
+		queries = 0
 	rows = []
 	range_ = name+'!'+lowerEnd+str(startingRow)+':'+higherEnd+str(endingRow) 
 	request = service.spreadsheets().values().get(spreadsheetId=spreadsheet_id, range=range_)
@@ -144,8 +151,8 @@ def getRange(name, lowerEnd, higherEnd, startingRow, endingRow):
 	if not values:
 		print('No data found.')
 	else:
-		print('Groups:')
-		print(len(values))
+		#print('Groups:')
+		#print(len(values))
 		for row in values:
 			if(len(row) != 0):
 				numberOfColumns = ord(higherEnd[0]) -  ord(lowerEnd[0]) + 1
@@ -155,10 +162,15 @@ def getRange(name, lowerEnd, higherEnd, startingRow, endingRow):
 	return rows
 
 def getList(name, lowerEnd, higherEnd, startingRow=2):
+	global queries
 	rows = []
 	rowLowerEnd = startingRow
 	gotAllTheNames = False
 	while(not gotAllTheNames):
+		queries = queries + 1
+		if queries == 90:
+			time.sleep(100)
+			queries = 0
 		rowHigherEnd = 29 + rowLowerEnd
 		range_ = name+'!'+lowerEnd+str(rowLowerEnd)+':'+higherEnd+str(rowHigherEnd) 
 		request = service.spreadsheets().values().get(spreadsheetId=spreadsheet_id, range=range_)
@@ -186,17 +198,12 @@ def getList(name, lowerEnd, higherEnd, startingRow=2):
 		rowLowerEnd = rowHigherEnd+1
 	return rows
 
-#TODO: once more sheets have been added, save this information to a json file
-getPACData()
-#def saveDictionary(dictionary, filename):
-#	f = open(filename, "w")
-#	json.dump(dictionary, f)
-#	f.close()
+def cacheData():
+	queries = 0
+	PACdata = getPACData()
+	cacheFile = "cache.json"
+	f = open(cacheFile, "w")
+	json.dump(PACdata, f)
+	f.close()
 
-#	gc = pygsheets.authorize()
-#	with gc.open(url) as sheet:
-	
-#if __name__ == "__main__":
-#	sampleDic = {'a':1, 'b':2}
-#	testFilename = "test.txt"
-#	saveDictionary(sampleDic, testFilename)
+cacheData()	
