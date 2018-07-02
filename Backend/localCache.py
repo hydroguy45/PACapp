@@ -98,11 +98,11 @@ def getSubcommitteeData(name):
 	subcomittee["Announcements"] = announcement
 	#Group data
 	print(" -Loading groups")
-	groups = []
+	groups = {}
 	rows = getList(name, "A", "A")
 	for row in rows:
 		print("   >Looking at "+row[0])
-		groups.append(getGroupData(row[0]))
+		groups[row[0]] = (getGroupData(row[0]))
 	subcomittee["Groups"] = groups
 	return subcomittee
 
@@ -114,7 +114,7 @@ def getGroupData(name):
 	for row in rows:
 		person = {"Name":row[0],"Position":row[1],"Email":row[2],"Expected Year of Graduation":row[3]}
 		persons.append(person)
-	group["ersons"] = persons
+	group["Persons"] = persons
 	#Add group performance details
 	performanceDetails = {}
 	rows = getRange(name, "F", "G", 12, 20)
