@@ -2,6 +2,8 @@ from wsgiref.simple_server import make_server
 from pyramid.config import Configurator
 from pyramid.response import Response
 import json
+HOST = "0.0.0.0"
+PORT = 8080
 
 cachedData = {}
 def loadJSON():
@@ -28,5 +30,6 @@ if __name__ == "__main__":
 		config.add_route("main", "/")
 		config.add_view(main, route_name="main")
 		app=config.make_wsgi_app()
-	server = make_server("0.0.0.0", 8080, app)
+	server = make_server(HOST, PORT, app)
+	print("Started server on %s:%d" % (HOST,PORT))
 	server.serve_forever()
