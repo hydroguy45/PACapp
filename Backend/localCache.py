@@ -15,7 +15,7 @@ if not creds or creds.invalid:
 	flow = client.flow_from_clientsecrets('client_secret.json', SCOPES)
 	creds = tools.run_flow(flow, store)
 service = discovery.build('sheets', 'v4', credentials=creds)
-spreadsheet_id = '1vGwybPul8-9r-u1Oj_5sHO6RxG-fqyNTTmcU7ajfBd0'  
+spreadsheet_id = '1vGwybPul8-9r-u1Oj_5sHO6RxG-fqyNTTmcU7ajfBd0'
 queries = 0
 
 def getPACData():
@@ -45,7 +45,7 @@ def getPACData():
 	for row in rows:
 		deadline = {"What":row[0], "When":row[1]}
 		deadlines.append(deadline)
-	pacData["Deadlines"] = deadline
+	pacData["Deadlines"] = deadlines
 	#Spaces
 	print("Loading location data")
 	spaces = {}
@@ -63,7 +63,7 @@ def getLocationData(name):
 	#Announcements
 	print(" -Loading announcements")
 	announcements = []
-	rows = getList(name, "A","C",4)
+	rows = getList(name, "A","C",5)
 	for row in rows:
 		announcement = {"Announcement":row[0],"Date":row[1],"Time":row[2]}
 		announcements.append(announcement)
@@ -91,11 +91,11 @@ def getSubcommitteeData(name):
 	#Subcommittee Announcements
 	print(" -Loading announcements")
 	announcements = []
-	rows = getList(name, "C", "E", 4)
+	rows = getList(name, "C", "E", 5)
 	for row in rows:
 		announcement = {"Announcement":row[0], "Date":row[1], "Time":row[2]}
 		announcements.append(announcement)
-	subcomittee["Announcements"] = announcement
+	subcomittee["Announcements"] = announcements
 	#Group data
 	print(" -Loading groups")
 	groups = {}
@@ -144,7 +144,7 @@ def getRange(name, lowerEnd, higherEnd, startingRow, endingRow):
 		time.sleep(100)
 		queries = 0
 	rows = []
-	range_ = name+'!'+lowerEnd+str(startingRow)+':'+higherEnd+str(endingRow) 
+	range_ = name+'!'+lowerEnd+str(startingRow)+':'+higherEnd+str(endingRow)
 	request = service.spreadsheets().values().get(spreadsheetId=spreadsheet_id, range=range_)
 	response = request.execute()
 	values = response.get('values', [])
@@ -172,7 +172,7 @@ def getList(name, lowerEnd, higherEnd, startingRow=2):
 			time.sleep(100)
 			queries = 0
 		rowHigherEnd = 29 + rowLowerEnd
-		range_ = name+'!'+lowerEnd+str(rowLowerEnd)+':'+higherEnd+str(rowHigherEnd) 
+		range_ = name+'!'+lowerEnd+str(rowLowerEnd)+':'+higherEnd+str(rowHigherEnd)
 		request = service.spreadsheets().values().get(spreadsheetId=spreadsheet_id, range=range_)
 		response = request.execute()
 		#pprint(response)
@@ -206,4 +206,4 @@ def cacheData():
 	json.dump(PACdata, f)
 	f.close()
 
-cacheData()	
+cacheData()

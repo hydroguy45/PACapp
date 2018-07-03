@@ -7,20 +7,62 @@ PORT = 8080
 
 cachedData = {}
 def loadJSON():
+	global cachedData
 	raw_json = open("cache.json").read()
 	cachedData = json.loads(raw_json)
+	#print(json.dumps(cachedData["Subcomittees"]["ACK"]))
 
-def getInfo(request):
-	groupname = "test"
-	password = "test"
-	info = getGroupInfo(groupname, password)
-	return Response(info)
+def getPerformances():
+	#TODO: complete
+	return []
 
-def getGroupInfo(groupname, password):
-	return "need to get group info"
+def getPerformancesAsString():
+	return Response("TODO")
+
+def getGroups():
+	allGroups = {}
+	for subcomitteeName in cacheData["Subcomittees"]:
+		subcomittee = cacheData["Subcomittees"][subcomitteeName]
+		groups = []
+		for groupName in subcomittee["Groups"]:
+			groups.append(groupName)
+		allGroups[subcomitteeName] = groups
+	return allGroups
+
+def getGroupsAsString():
+	return Response("TODO")
+
+def getGroupInfo(subcomittee, groupname, password):
+	subcomittees = cachedData["Subcomittees"]
+	SubComitteeData = subcomittees[subcomittee]
+	GroupData = SubComitteeData["Groups"][groupname]
+	if(password != GroupData["Performance Details"]["PAC App password"]):
+		return "Incorrect Password"
+	Deadlines = cachedData["Deadlines"] + SubComitteeData["Deadlines"]
+	Announcements = cachedData["Announcements"] + SubComitteeData["Announcements"] + GroupData["Announcements"]
+	Demerits = GroupData["Demerits"]
+	Persons = GroupData["Persons"]
+	Details = GroupData["Performance Details"]
+	SpaceName = Details["Location (as seen in sheet tag)"]
+	if(SpaceName != ""):
+		Space = cachedData["Spaces"][SpaceName]
+		Announcements = Announcements + Space["Announcements"]
+		Deadlines = Deadlines + Spaces["Deadlines"]
+	ResultData = {
+		"Deadlines":Deadlines,
+		"Announcements":Announcements,
+		"Demerits":Demerits,
+		"Persons":Persons,
+		"Details":Details
+	}
+	return ResultData
+
+def getGroupInfoAsString(request):
+	return Response("TODO")
 
 def main(request):
-	return Response("<h1>The server is up and running</h1>")
+	html = "<h1>The server is up and running</h1></br><p>%s</p>" % json.dumps(getGroupInfo("ACK","Pennsylvania Six-5000", "readthehandbook"))
+	return Response(html)
 
 if __name__ == "__main__":
 	print("Loading the google sheets data")
