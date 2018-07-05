@@ -2,6 +2,9 @@ from wsgiref.simple_server import make_server
 from pyramid.config import Configurator
 from pyramid.response import Response
 import json
+import time
+import threading
+import os
 HOST = "0.0.0.0"
 PORT = 8080
 
@@ -89,9 +92,25 @@ def main(request):
 	html = "<h1>The server is up and running</h1></br><p>%s</p>" % json.dumps(getGroupInfo("ACK","Pennsylvania Six-5000", "readthehandbook"))
 	return Response(html)
 
+class cachingThread(threading.Thread):
+	def __init__(self):
+		threading.Thread.__init__(self)
+		self.setDaemon(True)
+	def run(self):
+		while True:
+			print("Caching google docs data")
+			os.system('python localCache.py')
+			print("Syncing with cache")
+			loadJSON()
+			print("Waiting till next cache time")
+			time.sleep(60*60*23)#Once every 23 hours
+
 if __name__ == "__main__":
 	print("Loading the google sheets data")
 	loadJSON()
+	print("Initializing the caching thread")
+	cacher = cachingThread()
+	cacher.start()
 	print("Starting up server")
 	with Configurator() as config:
 		config.add_route("main", "/")
