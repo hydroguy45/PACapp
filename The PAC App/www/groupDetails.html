@@ -76,30 +76,45 @@
       }
       var server = "http://localhost:8080/"
       $http.get(server+"getInfo"+creds).then(function(response){
-        $scope.announcements = []
-        for(i in response.data.Demerits){
-          if(response.data.Demerits[i]["Date"] != "" && response.data.Demerits[i]["Reason"] != ""){
-            $scope.announcements.push(response.data.Demerits[i])
-          }
-        }
-        if($scope.Demerits.length == 0){
-          $scope.Demerits = [{
-            "Title":"No Demerits",
-            "Date":"N/A",
-            "Reason":"Because you're fantastic"
-          }]
-        }
+        $scope.info = response.data
       })
     })
   </script>
+  <!--TODO: incorporate the details about the performance-->
 	  <div  class="cards" ng-app="myApp" ng-controller='myCtrl'>
-  	  <div class="card" ng-repeat="x  in announcements">
+      <div class="card">
   			<div class="card-body">
-  			  <div class="card-title">{{x.Title}} at {{x.Date}}
+  			  <div class="card-title">{{info.Details["Performance title"]}}
   				<br/>
   			  </div>
   			  <div class="card-desc">
-  				{{x.Reason}}
+            What: {{info.Details["Description"]}}</br>
+            When: {{info.Details["Date (mm/dd/yyyy)"]}}</br>
+            Where: {{info.Details["Location (as seen in sheet tag)"]}}</br>
+            Family Friendly: {{info.Details["Family friendly?"]}}
+  			  </div>
+  			</div>
+		  </div>
+      <div class="card">
+  			<div class="card-body">
+  			  <div class="card-title">Roster
+  				<br/>
+  			  </div>
+  			  <div class="card-desc">
+            <table>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Position</th>
+                <th>Expected Year of Graduation</th>
+              </tr>
+              <tr ng-repeat="person in info.Persons">
+                <td>{{person.Name}}</td>
+                <td>{{person.Email}}</td>
+                <td>{{person.Position}}</td>
+                <td>{{person["Expected Year of Graduation"]}}</td>
+              </tr>
+            </table>
   			  </div>
   			</div>
 		  </div>
@@ -222,8 +237,6 @@
   }
   .card{
     background-color:white;
-    height:300px;
-    width:300px;
     margin-bottom:30px;
     box-shadow:rgba(0, 0, 0, 0.2) 0px 1px 2px 0px;
     border-top-left-radius:2px;
