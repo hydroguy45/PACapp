@@ -103,22 +103,19 @@
   </head>
   <body ng-app='myApp' ng-controller="myCtrl">
     <center>
-      <div id="loginBox">
-        <table>
-          <tr>
-            <td><h2>Group:</h2></td>
-            <td><select id="group">
-              <optgroup ng-repeat="(subcomittee, groups) in subcomittees" label="{{subcomittee}}">
-                <option ng-repeat="group in groups" value="{{group}}">{{group}}</option>
-              </optgroup>
-            </select></td>
-          </tr>
-          <tr>
-            <td><h2>Password:</h2></td>
-            <td><input id="password" type="password"/></td>
-            <td><button onclick="login()">Login</button></td>
-          </tr>
-        <table>
+      <div id="loginBox" >
+        <h2>The PAC App</h2>
+        <div align="left">
+          <span>Group:</span>
+          <select id="group">
+            <optgroup ng-repeat="(subcomittee, groups) in subcomittees" label="{{subcomittee}}">
+              <option ng-repeat="group in groups" value="{{group}}">{{group}}</option>
+            </optgroup>
+          </select></br>
+          <span>Password:</span>
+          <input id="password" type="password"/></br>
+          <button onclick="login()">   Login   </button>
+        </div>
       </div>
     </center>
   </body>
