@@ -53,22 +53,51 @@
     <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.min.js"></script>
     <script>
       //app.initialize();//If you want this to be a cordova app
+      var subcomittees = {}
       var app = angular.module('myApp', {})
       app.controller('myCtrl', function($scope, $http){
         //TODO: verify server
-        var server = "localhost:8080/"
-        $http.get(server+"getGroups").then(function(data){
-          console.log(data)
-          $scope.subcomittees = JSON.parse(data)
+        var server = "http://localhost:8080/"
+        $http.get(server+"getGroups").then(function(response){
+          $scope.subcomittees = response.data
+          subcomittees = response.data
         })
-        //TODO: remove this when you get the get request working
-        $scope.subcomittees = {"ACK": ["Penny Loafers", "The Inspiration", "PennYo", "Pennchants", "Counterparts", "Penn Masala", "Full Measure", "Shabbatones", "Off the Beat", "Pennsylvania Six-5000", "Quaker Notes", "Atma", "Disney", "Penn Sori"], "SMAC": ["Penn Band", "New Spirit of Penn Gospel Choir",
-        "Penn Jazz Ensemble", "Excelano Project", "Without a Net", "Penn Sargam", "Simply Chaos", "Bloomers", "Glee Club", "Penn Sirens", "Penn Singers", "Mask & Wig", "Penn Dure"], "TAC-e": ["PenNaatak", "Front Row Theatre", "African American Arts Alliance (4A)", "Pennsylvania Players", "iNtuitons",
-        "Quadramics", "Stimulus Children's Theatre"], "DAC": ["Soundworks Tap Factory", "Strictly Funk Dance Company", "Penn Dhamaka", "Sparks Dance Company", "Penn Dance Company", "West Philly Swingers", "Onda Latina", "Penn Yalla", "Pan-Asian Dance Troupe", "Arts House Dance Company",
-        "African Rhythms", "PenNaach"]}
       })
       function login(){
-        //TODO: submit login query
+        subcomittee = ""
+        group = document.getElementById("group").value
+        for(subcomitteeName in subcomittees){
+          groups = subcomittees[subcomitteeName]
+          for(i in groups){
+            if(groups[i] == group){
+              subcomittee = subcomitteeName
+              break
+            }
+          }
+        }
+        password = document.getElementById("password").value
+        queryString = "?Subcomittee="+subcomittee+"&Group="+group+"&Password="+password
+        //Save credentials as a get request string
+        expires = new Date();
+        expires.setDate(expires.getDate()+7)
+        document.cookie = "creds="+queryString+";expires="+expires.toUTCString()+";path=/"
+        //Load the appHome.html page
+        window.location.href = "appHome.html"
+      }
+      function getCookie(cname) {
+        var name = cname + "=";
+        var decodedCookie = decodeURIComponent(document.cookie);
+        var ca = decodedCookie.split(';');
+        for(var i = 0; i < ca.length; i++) {
+            var c = ca[i];
+            while (c.charAt(0) == ' ') {
+                c = c.substring(1);
+            }
+            if (c.indexOf(name) == 0) {
+                return c.substring(name.length, c.length);
+            }
+        }
+        return "";
       }
     </script>
   </head>
@@ -78,7 +107,7 @@
         <table>
           <tr>
             <td><h2>Group:</h2></td>
-            <td><select>
+            <td><select id="group">
               <optgroup ng-repeat="(subcomittee, groups) in subcomittees" label="{{subcomittee}}">
                 <option ng-repeat="group in groups" value="{{group}}">{{group}}</option>
               </optgroup>

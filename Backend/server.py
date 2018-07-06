@@ -1,4 +1,5 @@
 from wsgiref.simple_server import make_server
+from pyramid.events import NewRequest, subscriber
 from pyramid.config import Configurator
 from pyramid.response import Response
 import json
@@ -105,6 +106,17 @@ class cachingThread(threading.Thread):
 			print("Waiting till next cache time")
 			time.sleep(60*60*23)#Once every 23 hours
 
+def add_cors_headers_response_callback(event):
+    def cors_headers(request, response):
+        response.headers.update({
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST,GET,DELETE,PUT,OPTIONS',
+        'Access-Control-Allow-Headers': 'Origin, Content-Type, Accept, Authorization',
+        'Access-Control-Allow-Credentials': 'true',
+        'Access-Control-Max-Age': '1728000',
+        })
+    event.request.add_response_callback(cors_headers)
+
 if __name__ == "__main__":
 	print("Loading the google sheets data")
 	loadJSON()
@@ -113,6 +125,8 @@ if __name__ == "__main__":
 	cacher.start()
 	print("Starting up server")
 	with Configurator() as config:
+		config.add_subscriber(add_cors_headers_response_callback, NewRequest)
+
 		config.add_route("main", "/")
 		config.add_view(main, route_name="main")
 
