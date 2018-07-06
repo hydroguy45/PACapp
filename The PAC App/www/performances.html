@@ -20,9 +20,12 @@
       under the License.
   -->
 <meta charset="utf-8"/>
-  <div class="c7298">The PAC App
-    <br/>
-  </div>
+  <a href="appHome.html">
+    <div class="c7298">
+      The PAC App
+      <br/>
+    </div>
+  </a>
  <meta charset="utf-8" />
     <meta name="format-detection" content="telephone=no" />
     <meta name="msapplication-tap-highlight" content="no" />
@@ -62,35 +65,46 @@
       }
       return "";
     }
-    creds = getCookie("creds")
-    if(creds == ""){
-      alert("Please log in. The app will not work properly if you aren't logged in.")
-    } else {
-      group = /&Group=(.*)&Password/g.exec(creds)[1]
-      document.getElementById("username").innerHTML = group
-    }
+    var app = angular.module('myApp',{})
+    app.controller('myCtrl', function($scope, $http){
+      creds = getCookie("creds")
+      if(creds == ""){
+        alert("Please log in. The app will not work properly if you aren't logged in.")
+      } else {
+        group = /&Group=(.*)&Password/g.exec(creds)[1]
+        document.getElementById("username").innerHTML = group
+      }
+      var server = "http://localhost:8080/"
+      $http.get(server+"getInfo"+creds).then(function(response){
+        $scope.announcements = []
+        for(i in response.data.Demerits){
+          if(response.data.Demerits[i]["Date"] != "" && response.data.Demerits[i]["Reason"] != ""){
+            $scope.announcements.push(response.data.Demerits[i])
+          }
+        }
+        if($scope.Demerits.length == 0){
+          $scope.Demerits = [{
+            "Title":"No Demerits",
+            "Date":"N/A",
+            "Reason":"Because you're fantastic"
+          }]
+        }
+      })
+    })
   </script>
-	  <div  class="cards" ng-app="" ng-init="names=[
-	{name:'Mandatory Calendar',details:'TODO',href:'login.html'},
-	{name:'Demerit Status',details:'TODO',href:'demerits.html'},
-	{name:'Announcements',details:'TODO',href:'announcements.html'},
-	{name:'Performances',details:'TODO',href:'performances.html'},
-	{name:'The Handbook',details:'TODO',href:'https://www.vpul.upenn.edu/pac/handbook.php'},
-	{name:'Your Group Details',details:'TODO',href:'groupDetails.html'}]">
-	  <div class="card" ng-repeat="x  in names">
-      <a href="{{x.href}}">
+	  <div  class="cards" ng-app="myApp" ng-controller='myCtrl'>
+  	  <div class="card" ng-repeat="x  in announcements">
   			<div class="card-body">
-  			  <div class="card-title">{{x.name}}
+  			  <div class="card-title">TODO: fix
   				<br/>
   			  </div>
   			  <div class="card-desc">
-  				{{x.details}}
+  				{{x.Reason}}
   			  </div>
   			</div>
-  		  </div>
-      </a>
-	</div>
-</div>
+		  </div>
+  	</div>
+  </div>
 </section>
 <section class="am-sect">
   <div class="container-width">
@@ -208,7 +222,8 @@
   }
   .card{
     background-color:white;
-    width:80%;
+    height:300px;
+    width:300px;
     margin-bottom:30px;
     box-shadow:rgba(0, 0, 0, 0.2) 0px 1px 2px 0px;
     border-top-left-radius:2px;
