@@ -84,7 +84,7 @@
 	  <div  class="cards" ng-app="myApp" ng-controller='myCtrl'>
       <div class="card">
   			<div class="card-body">
-  			  <div class="card-title">{{info.Details["Performance title"]}}
+				<div class="card-title"><h3>Semester Performance</h3>{{info.Details["Performance title"]}}
   				<br/>
   			  </div>
   			  <div class="card-desc">
@@ -98,22 +98,18 @@
 		  </div>
       <div class="card">
   			<div class="card-body">
-  			  <div class="card-title">Roster
+				<div class="card-title"><h3> Group Roster</h3>
   				<br/>
   			  </div>
   			  <div class="card-desc">
             <table>
               <tr>
                 <th>Name</th>
-                <th>Email</th>
                 <th>Position</th>
-                <th>Expected Year of Graduation</th>
               </tr>
               <tr ng-repeat="person in info.Persons">
                 <td>{{person.Name}}</td>
-                <td>{{person.Email}}</td>
                 <td>{{person.Position}}</td>
-                <td>{{person["Expected Year of Graduation"]}}</td>
               </tr>
             </table>
   			  </div>

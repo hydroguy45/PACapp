@@ -54,11 +54,13 @@
     <script>
       //app.initialize();//If you want this to be a cordova app
       var subcomittees = {}
+     var connection;
       var app = angular.module('myApp', {})
       app.controller('myCtrl', function($scope, $http){
         //TODO: verify server
         var server = "http://142.93.9.235:8080/"
-        $http.get(server+"getGroups").then(function(response){
+        connection = $http
+	$http.get(server+"getGroups").then(function(response){
           $scope.subcomittees = response.data
           subcomittees = response.data
         })
@@ -77,12 +79,21 @@
         }
         password = document.getElementById("password").value
         queryString = "?Subcomittee="+subcomittee+"&Group="+group+"&Password="+password
-        //Save credentials as a get request string
+	//Save credentials as a get request string
         expires = new Date();
         expires.setDate(expires.getDate()+7)
         document.cookie = "creds="+queryString+";expires="+expires.toUTCString()+";path=/"
-        //Load the appHome.html page
-        window.location.href = "appHome.html"
+        var server = "http://142.93.9.235:8080/"
+	connection.get(server+"getInfo"+queryString).then(function(response){
+		//console.log(response)
+		if(response.data == "\"Incorrect Password\""){
+			console.log("Incorrect password")
+		} else {
+			//Load the appHome.html page
+        		window.location.href = "appHome.html"
+		}
+	})
+
       }
       function getCookie(cname) {
         var name = cname + "=";

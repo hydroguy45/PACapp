@@ -81,6 +81,7 @@
           if(response.data.Demerits[i]["Date"] != "" && response.data.Demerits[i]["Reason"] != ""){
             $scope.announcements.push(response.data.Demerits[i])
           }
+	 
         }
         if($scope.announcements.length == 0){
           $scope.announcements = [{
