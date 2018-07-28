@@ -35,7 +35,7 @@ def getPACData():
 	announcements = []
 	rows = getList(PACSheet,"C", "E", 5)
 	for row in rows:
-		announcement = {"Announcements":row[0], "Date":row[1], "Time":row[2]}
+		announcement = {"Announcement":row[0], "Date":row[1], "Time":row[2]}
 		announcements.append(announcement)
 	pacData["Announcements"] = announcements
 	#General Performance Deadlines
@@ -125,7 +125,7 @@ def getGroupData(name):
 	announcements = []
 	rows = getList(name, "F", "H", 26)
 	for row in rows:
-		announcement = {"Annoucement":row[0], "Date":row[1], "Time":row[2]};
+		announcement = {"Announcement":row[0], "Date":row[1], "Time":row[2]};
 		announcements.append(announcement)
 	group["Announcements"] = announcements
 	#Add group demerits
