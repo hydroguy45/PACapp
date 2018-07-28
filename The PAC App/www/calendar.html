@@ -74,16 +74,26 @@
         group = /&Group=(.*)&Password/g.exec(creds)[1]
         document.getElementById("username").innerHTML = group
       }
-      var server = "http://localhost:8080/"
+      var server = "http://142.93.9.235:8080/"
       $http.get(server+"getInfo"+creds).then(function(response){
         $scope.Deadlines = response.data.Deadlines
         for(i in $scope.Deadlines){
           performance = new Date(response.data.Details["Date (mm/dd/yyyy)"])
           performance.setDate(performance.getDate() - $scope.Deadlines[i].When)
-          if(isNaN(performance.getTime())) performance = "Performance date unknown"
+          if(isNaN(performance.getTime())){
+		  $scope.Deadlines[i].Day = new Date()
+			performance = "Performance date unknown"
+		  } else {
+			$scope.Deadlines[i].Day = performance
+			performance = performance.toLocaleDateString()
+		  }
           $scope.Deadlines[i].Date = performance
           console.log($scope.Deadlines[i].Date)
         }
+		$scope.Deadlines.sort((x,y)=>{
+			return x.Day.getTime() - y.Day.getTime()
+		})
+		$scope.Deadlines.filter(i=>{i.Day < (new Date())})
         if($scope.Deadlines.length == 0){
           $scope.Deadlines = [{
             "What":"No Deadlines",

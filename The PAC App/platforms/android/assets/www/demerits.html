@@ -74,7 +74,7 @@
         group = /&Group=(.*)&Password/g.exec(creds)[1]
         document.getElementById("username").innerHTML = group
       }
-      var server = "http://142.93.9.235:8080/"
+      var server = "http://192.168.137.1:8080/"
       $http.get(server+"getInfo"+creds).then(function(response){
         $scope.announcements = []
         for(i in response.data.Demerits){

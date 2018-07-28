@@ -16,10 +16,10 @@
     </feature>
     <name>The PAC App</name>
     <description>
-        Push sample application that receives push notifications.
+        An application for keeping up to date with PAC.
     </description>
-    <author email="support@phonegap.com" href="http://phonegap.com">
-        PhoneGap Team
+    <author email="foleych@seas.upenn.edu" href="http://phonegap.com">
+        Chris Foley
     </author>
     <content src="index.html" />
     <access origin="*" />

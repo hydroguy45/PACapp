@@ -74,32 +74,46 @@
         group = /&Group=(.*)&Password/g.exec(creds)[1]
         document.getElementById("username").innerHTML = group
       }
-      var server = "http://142.93.9.235:8080/"
+      var server = "http://192.168.137.1:8080/"
       $http.get(server+"getInfo"+creds).then(function(response){
-        $scope.announcements = []
-        for(i in response.data.Demerits){
-          if(response.data.Demerits[i]["Date"] != "" && response.data.Demerits[i]["Reason"] != ""){
-            $scope.announcements.push(response.data.Demerits[i])
-          }
+        $scope.Deadlines = response.data.Deadlines
+        for(i in $scope.Deadlines){
+          performance = new Date(response.data.Details["Date (mm/dd/yyyy)"])
+          performance.setDate(performance.getDate() - $scope.Deadlines[i].When)
+          if(isNaN(performance.getTime())){
+		  $scope.Deadlines[i].Day = new Date()
+			performance = "Performance date unknown"
+		  } else {
+			$scope.Deadlines[i].Day = performance
+			performance = performance.toLocaleDateString()
+		  }
+          $scope.Deadlines[i].Date = performance
+          console.log($scope.Deadlines[i].Date)
         }
-        if($scope.announcements.length == 0){
-          $scope.announcements = [{
-            "Title":"No Demerits",
-            "Date":"N/A",
-            "Reason":"Because you're fantastic"
+		$scope.Deadlines.sort((x,y)=>{
+			return x.Day.getTime() - y.Day.getTime()
+		})
+		$scope.Deadlines.filter(i=>{i.Day < (new Date())})
+        if($scope.Deadlines.length == 0){
+          $scope.Deadlines = [{
+            "What":"No Deadlines",
+            "When":"N/A",
+            "Date":"N/A"
           }]
         }
       })
     })
   </script>
 	  <div  class="cards" ng-app="myApp" ng-controller='myCtrl'>
-  	  <div class="card" ng-repeat="x  in announcements">
+  	  <div class="card" ng-repeat="x  in Deadlines">
   			<div class="card-body">
-  			  <div class="card-title">{{x.Title}} at {{x.Date}}
+          <!--TODO: work out this date-->
+  			  <div class="card-title">{{x.Date}}
   				<br/>
   			  </div>
   			  <div class="card-desc">
-  				{{x.Reason}}
+  				What: {{x.What}}</br>
+          When: Due {{x.When}} days before the first Sunday of tech week.
   			  </div>
   			</div>
 		  </div>
@@ -222,8 +236,6 @@
   }
   .card{
     background-color:white;
-    height:300px;
-    width:300px;
     margin-bottom:30px;
     box-shadow:rgba(0, 0, 0, 0.2) 0px 1px 2px 0px;
     border-top-left-radius:2px;

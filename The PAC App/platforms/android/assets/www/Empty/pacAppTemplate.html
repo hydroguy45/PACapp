@@ -20,12 +20,9 @@
       under the License.
   -->
 <meta charset="utf-8"/>
-  <a href="appHome.html">
-    <div class="c7298">
-      The PAC App
-      <br/>
-    </div>
-  </a>
+  <div class="c7298">The PAC App
+    <br/>
+  </div>
  <meta charset="utf-8" />
     <meta name="format-detection" content="telephone=no" />
     <meta name="msapplication-tap-highlight" content="no" />
@@ -43,68 +40,33 @@
     <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: 'unsafe-inline' https://ssl.gstatic.com; style-src 'self' 'unsafe-inline'; media-src *" /> -->
 
 </header>
-<div class="flex-desc">Viewing account for <span id="username"></span>
+<div class="flex-desc">Please Select A Catagory
   <br/>
 </div>
 <section class="flex-sect">
   <div class="container-width">
   <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.min.js"></script>
-  <script>
-    function getCookie(cname) {
-      var name = cname + "=";
-      var decodedCookie = decodeURIComponent(document.cookie);
-      var ca = decodedCookie.split(';');
-      for(var i = 0; i < ca.length; i++) {
-          var c = ca[i];
-          while (c.charAt(0) == ' ') {
-              c = c.substring(1);
-          }
-          if (c.indexOf(name) == 0) {
-              return c.substring(name.length, c.length);
-          }
-      }
-      return "";
-    }
-    var app = angular.module('myApp',{})
-    app.controller('myCtrl', function($scope, $http){
-      creds = getCookie("creds")
-      if(creds == ""){
-        alert("Please log in. The app will not work properly if you aren't logged in.")
-      } else {
-        group = /&Group=(.*)&Password/g.exec(creds)[1]
-        document.getElementById("username").innerHTML = group
-      }
-      var server = "http://142.93.9.235:8080/"
-      $http.get(server+"getInfo"+creds).then(function(response){
-        $scope.announcements = []
-        for(i in response.data.Demerits){
-          if(response.data.Demerits[i]["Date"] != "" && response.data.Demerits[i]["Reason"] != ""){
-            $scope.announcements.push(response.data.Demerits[i])
-          }
-        }
-        if($scope.announcements.length == 0){
-          $scope.announcements = [{
-            "Title":"No Demerits",
-            "Date":"N/A",
-            "Reason":"Because you're fantastic"
-          }]
-        }
-      })
-    })
-  </script>
-	  <div  class="cards" ng-app="myApp" ng-controller='myCtrl'>
-  	  <div class="card" ng-repeat="x  in announcements">
-  			<div class="card-body">
-  			  <div class="card-title">{{x.Title}} at {{x.Date}}
-  				<br/>
-  			  </div>
-  			  <div class="card-desc">
-  				{{x.Reason}}
-  			  </div>
-  			</div>
+	  <div  class="cards" ng-app="" ng-init="names=[
+	{name:'Mandatory Calendar',details:'test1'},
+	{name:'Demerite Status',details:'test2'},
+	{name:'Production Cycle',details:'test3'},
+	{name:'Other Events',details:'test4'},
+	{name:'The Handbook',details:'test5'},
+	{name:'Your Group',details:'test6'}]">
+	  <div class="card" ng-repeat="x  in names">
+			<div class="card-header ch6">
+			</div>
+			<div class="card-body">
+			  <div class="card-title">{{x.name}}
+				<br/>
+			  </div>
+			  <div class="card-desc">
+				{{x.details}}
+			  </div>
+			</div>
 		  </div>
-  	</div>
-  </div>
+	</div>
+</div>
 </section>
 <section class="am-sect">
   <div class="container-width">

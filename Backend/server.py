@@ -65,7 +65,7 @@ def getGroupInfo(subcomittee, groupname, password):
 	if(SpaceName != ""):
 		Space = cachedData["Spaces"][SpaceName]
 		Announcements = Announcements + Space["Announcements"]
-		Deadlines = Deadlines + Spaces["Deadlines"]
+		Deadlines = Deadlines + Space["Deadlines"]
 	ResultData = {
 		"Deadlines":Deadlines,
 		"Announcements":Announcements,
@@ -116,7 +116,7 @@ def add_cors_headers_response_callback(event):
         'Access-Control-Max-Age': '1728000',
         })
     event.request.add_response_callback(cors_headers)
-
+	
 if __name__ == "__main__":
 	print("Loading the google sheets data")
 	loadJSON()
@@ -138,7 +138,9 @@ if __name__ == "__main__":
 
 		config.add_route("getPerformances", "/getPerformances")
 		config.add_view(getPerformancesAsString, route_name="getPerformances")
-
+		
+		config.add_static_view('static', path='../The PAC App/www/')
+		
 		app=config.make_wsgi_app()
 	server = make_server(HOST, PORT, app)
 	print("Started server on %s:%d" % (HOST,PORT))
