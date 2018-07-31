@@ -121,6 +121,9 @@ def getGroupData(name):
 	for row in rows:
 		performanceDetails[row[0]] = row[1]
 	group["Performance Details"] = performanceDetails
+	rows = getRange(name,"H","I",12,13)
+	for row in rows:
+		group["Performance Details"][row[0]] = row[1]
 	#Add group announcements
 	announcements = []
 	rows = getList(name, "F", "H", 26)

@@ -76,38 +76,40 @@
       }
       var server = "http://142.93.9.235:8080/"
       $http.get(server+"getInfo"+creds).then(function(response){
-        $scope.Deadlines = response.data.Deadlines
-        for(i in $scope.Deadlines){
-          performance = new Date(response.data.Details["Date (mm/dd/yyyy)"])
-          performance.setDate(performance.getDate() - $scope.Deadlines[i].When)
-          if(isNaN(performance.getTime())){
-		  $scope.Deadlines[i].Day = new Date()
-			performance = "Performance date unknown"
-		  } else {
-			$scope.Deadlines[i].Day = performance
-			performance = performance.toLocaleDateString()
-		  }
-          $scope.Deadlines[i].Date = performance
-          console.log($scope.Deadlines[i].Date)
-        }
-		$scope.Deadlines.sort((x,y)=>{
-			return x.Day.getTime() - y.Day.getTime()
-		})
-		$scope.Deadlines.filter(i=>{i.Day < (new Date())})
-        if($scope.Deadlines.length == 0){
-          $scope.Deadlines = [{
-            "What":"No Deadlines",
-            "When":"N/A",
-            "Date":"N/A"
-          }]
-        }
-      })
+        $scope.cal = response.data.Details["Embedded Calendar Link"]
+        //     $scope.Deadlines = response.data.Deadlines
+    //     for(i in $scope.Deadlines){
+    //       performance = new Date(response.data.Details["Date (mm/dd/yyyy)"])
+    //       performance.setDate(performance.getDate() - $scope.Deadlines[i].When)
+    //       if(isNaN(performance.getTime())){
+		//   $scope.Deadlines[i].Day = new Date()
+		// 	performance = "Performance date unknown"
+		//   } else {
+		// 	$scope.Deadlines[i].Day = performance
+		// 	performance = performance.toLocaleDateString()
+		//   }
+    //       $scope.Deadlines[i].Date = performance
+    //       console.log($scope.Deadlines[i].Date)
+    //     }
+		// $scope.Deadlines.sort((x,y)=>{
+		// 	return x.Day.getTime() - y.Day.getTime()
+		// })
+		// $scope.Deadlines.filter(i=>{i.Day < (new Date())})
+    //     if($scope.Deadlines.length == 0){
+    //       $scope.Deadlines = [{
+    //         "What":"No Deadlines",
+    //         "When":"N/A",
+    //         "Date":"N/A"
+    //       }]
+    //     }
+    //   })
     })
   </script>
 	  <div  class="cards" ng-app="myApp" ng-controller='myCtrl'>
-  	  <div class="card" ng-repeat="x  in Deadlines">
+      <div ng-bind-html="cal"></div>
+      <!--
+      <div class="card" ng-repeat="x  in Deadlines">
   			<div class="card-body">
-          <!--TODO: work out this date-->
   			  <div class="card-title">{{x.Date}}
   				<br/>
   			  </div>
@@ -117,6 +119,7 @@
   			  </div>
   			</div>
 		  </div>
+      -->
   	</div>
   </div>
 </section>
