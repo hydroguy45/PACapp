@@ -56,7 +56,7 @@ def getPACData():
 		spaces[row[0]] = getLocationData(row[0])
 	pacData["Spaces"] = spaces
 	#Done
-	pprint(pacData)
+	#pprint(pacData)
 	return pacData
 
 def getLocationData(name):
