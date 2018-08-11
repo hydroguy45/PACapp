@@ -135,3 +135,4 @@ if __name__=="__main__":
                 time.sleep(100)
                 index = 1
             index = index + 1
+    print("Finished at {}".format(datetime.datetime.now().isoformat()))
