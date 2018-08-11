@@ -8,6 +8,7 @@ import dateutil.parser
 from dateutil.tz import gettz
 import datetime
 import json
+import time
 # Setup the Calendar API
 cachedData = {}
 SCOPES = ['https://www.googleapis.com/auth/calendar']
@@ -47,12 +48,15 @@ def getGroupInfo(subcomittee, groupName):
 
 def getGroupRequiredEventsForGroup(subcomittee,groupName):
     groupInfo = getGroupInfo(subcomittee, groupName)
-    performance = dateutil.parser.parse(groupInfo["Details"]["Date (mm/dd/yyyy)"], tzinfos={None:gettz("America/New_York")})
     events = []
-    for dueDate in groupInfo["Deadlines"]:
-        dateOffset = int(dueDate["When"])
-        date = performance - datetime.timedelta(days=dateOffset)
-        events.append((date,dueDate["What"]))
+    if groupInfo["Details"]["Date (mm/dd/yyyy)"] != "":
+        performance = dateutil.parser.parse(groupInfo["Details"]["Date (mm/dd/yyyy)"], tzinfos={None:gettz("America/New_York")})
+        for dueDate in groupInfo["Deadlines"]:
+            dateOffset = int(dueDate["When"])
+            date = performance - datetime.timedelta(days=dateOffset)
+            events.append((date,dueDate["What"]))
+    else:
+        print("{} is missing a performance date".format(groupName))
     return events
 
 # Call the Calendar API
@@ -120,8 +124,12 @@ if __name__=="__main__":
     loadGroupDataFromCache()
     #mainEvents = getUpcomingEventsFromCalendar('thepacapp@gmail.com')
     #pp.pprint(mainEvents)
+    index = 1
     for subcomittee in cachedData["Subcomittees"]:
         for group in cachedData["Subcomittees"][subcomittee]["Groups"]:
-            print("Inspecting calendar for {} which is a part of {}".format(group, subcomittee))
+            print("\nInspecting calendar for {} which is a part of {}".format(group, subcomittee))
             rectifyDescripanciesOnGroupCalendar(subcomittee, group)
-            #TODO: sleep for a period of time
+            if index == 10:
+                time.sleep(100)
+                index = 1
+            index = index + 1
