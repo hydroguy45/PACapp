@@ -6,6 +6,7 @@ from httplib2 import Http
 from oauth2client import file, client, tools
 import time
 import json
+import os
 
 # Setup the Sheets API
 SCOPES = 'https://www.googleapis.com/auth/spreadsheets.readonly'
@@ -210,3 +211,5 @@ def cacheData():
 	f.close()
 
 cacheData()
+print("Launching the calendarCache application")
+os.system('python calendarCache.py')

@@ -61,6 +61,7 @@ def getGroupRequiredEventsForGroup(subcomittee,groupName):
 
 # Call the Calendar API
 def getUpcomingEventsFromCalendar(calID):
+    print(calID)
     now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
     #Gets 250 upcoming events
     events_result = service.events().list(calendarId=calID, timeMin=now, singleEvents=True,
@@ -103,7 +104,7 @@ def addEventToCalendar(event, calID):
     print("Adding events to calendar")
 
 def rectifyDescripanciesOnGroupCalendar(subcomittee, groupName):
-    calID = cachedData["Subcomittees"][subcomittee]["Groups"][groupName]["Performance Details"]["Preproduction Calendar"]
+    calID = cachedData["Subcomittees"][subcomittee]["Groups"][groupName]["Performance Details"]["Preproduction Calendar"].rstrip()
     eventsWithIDs, eventsInCalendar = getUpcomingEventsFromCalendar(calID)
     groupEvents = getGroupRequiredEventsForGroup(subcomittee, groupName)
     for event in groupEvents:
@@ -122,8 +123,9 @@ def rectifyDescripanciesOnGroupCalendar(subcomittee, groupName):
 if __name__=="__main__":
     print("Starting the calendar cache application")
     loadGroupDataFromCache()
-    #mainEvents = getUpcomingEventsFromCalendar('thepacapp@gmail.com')
-    #pp.pprint(mainEvents)
+#    mainEvents = getUpcomingEventsFromCalendar('gj1lt5vrqqegdhncc1cmm3t10k@group.calendar.google.com')
+#    pp.pprint(mainEvents)
+#    rectifyDescripanciesOnGroupCalendar("SMAC", "Bloomers")
     index = 1
     for subcomittee in cachedData["Subcomittees"]:
         for group in cachedData["Subcomittees"][subcomittee]["Groups"]:
