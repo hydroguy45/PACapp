@@ -9,6 +9,7 @@ from dateutil.tz import gettz
 import datetime
 import json
 import time
+import pytz
 # Setup the Calendar API
 cachedData = {}
 SCOPES = ['https://www.googleapis.com/auth/calendar']
@@ -51,6 +52,7 @@ def getGroupRequiredEventsForGroup(subcomittee,groupName):
     events = []
     if groupInfo["Details"]["Date (mm/dd/yyyy)"] != "":
         performance = dateutil.parser.parse(groupInfo["Details"]["Date (mm/dd/yyyy)"], tzinfos={None:gettz("America/New_York")})
+        performance = performance - datetime.timedelta((performance.weekday()+1)%7)
         for dueDate in groupInfo["Deadlines"]:
             dateOffset = int(dueDate["When"])
             date = performance - datetime.timedelta(days=dateOffset)
@@ -100,8 +102,11 @@ def addEventToCalendar(event, calID):
         'overrides': [],
       },
     }
-    service.events().insert(calendarId=calID, body=eventFormated).execute()
-    print("Adding events to calendar")
+    if event[0] > datetime.datetime.now(pytz.timezone("America/New_York")):
+        service.events().insert(calendarId=calID, body=eventFormated).execute()
+        print("Adding events to calendar")
+    #else:
+        #print("Event Already Past")
 
 def rectifyDescripanciesOnGroupCalendar(subcomittee, groupName):
     calID = cachedData["Subcomittees"][subcomittee]["Groups"][groupName]["Performance Details"]["Preproduction Calendar"].rstrip()
@@ -109,7 +114,7 @@ def rectifyDescripanciesOnGroupCalendar(subcomittee, groupName):
     groupEvents = getGroupRequiredEventsForGroup(subcomittee, groupName)
     for event in groupEvents:
         if event not in eventsInCalendar:
-            print("Adding new events")
+            #print("Adding new events")
             addEventToCalendar(event,calID)
     for i in range(0,len(eventsInCalendar)):
         event = eventsInCalendar[i]

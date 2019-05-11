@@ -26,7 +26,7 @@
  <meta charset="utf-8" />
     <meta name="format-detection" content="telephone=no" />
     <meta name="msapplication-tap-highlight" content="no" />
-    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width" />
+    <meta name="viewport" content="initial-scale=1, width=device-width" />
     <!-- This is a wide open CSP declaration. To lock this down for production, see below. -->
     <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline'; style-src 'self' 'unsafe-inline'; media-src *" />
     <!-- Good default declaration:
@@ -47,6 +47,11 @@
   <div class="container-width">
   <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.min.js"></script>
   <script>
+    /*if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
+	console.log("Mobile browser");
+	    //    document.documentElement.body.style.width = window.screen.width+"px"
+    	document.documentElement.style.width ="320px"
+    }*/
     function getCookie(cname) {
       var name = cname + "=";
       var decodedCookie = decodeURIComponent(document.cookie);
@@ -101,7 +106,7 @@
   </div>
 </section>
 <section class="bdg-sect">
-  <div class="container-width">
+  <!--<div class="container-width">
     <h1 class="bdg-title">The PAC board
       <br/>
     </h1>
@@ -166,7 +171,7 @@
         </div>
       </div>
     </div>
-  </div>
+  </div>-->
 </section>
 <style>* {
   box-sizing: border-box;

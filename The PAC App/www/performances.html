@@ -74,14 +74,18 @@
         group = /&Group=(.*)&Password/g.exec(creds)[1]
         document.getElementById("username").innerHTML = group
       }
-      var server = "http://142.93.9.235:8080/"
+      var server = "http://upenn.pennpacapp.com/"
       $http.get(server+"getPerformances").then(function(response){
-        $scope.performances = response.data
-		console.log(response.data)
+        $scope.performances = response.data.filter(x=>Date.parse(x.Date)+7 >= Date.now())
+	$scope.performances = $scope.performances.sort((a,b)=>{
+		return Date.parse(a["Date"])-Date.parse(b["Date"])	
+	})
+	console.log(response.data)
         if($scope.performances.length == 0){
           $scope.performances = [{
-            "What":"No Performances",
-            "When":"N/A"
+ 	    "Group":"",
+	    "Description":"No Performances",
+            "Date":"N/A"
           }]
         }
       })
@@ -90,7 +94,7 @@
 	  <div  class="cards" ng-app="myApp" ng-controller='myCtrl'>
   	  <div class="card" ng-repeat="x in performances">
   			<div class="card-body">
-  			  <div class="card-title">{{x.Date}} in {{x.Location}}
+				<div class="card-title">{{x.Group}}<p style="font-size:0.75em">{{x.Date}} in {{x.Location}}</p>
   				<br/>
   			  </div>
   			  <div class="card-desc">
@@ -109,7 +113,7 @@
   </div>
 </section>
 <section class="bdg-sect">
-  <div class="container-width">
+  <!--<div class="container-width">
     <h1 class="bdg-title">The PAC board
       <br/>
     </h1>
@@ -174,7 +178,7 @@
         </div>
       </div>
     </div>
-  </div>
+  </div>-->
 </section>
 <style>* {
   box-sizing: border-box;
@@ -220,7 +224,7 @@
   }
   .card{
     background-color:white;
-    height:300px;
+    /*height:300px;*/
     width:300px;
     margin-bottom:30px;
     box-shadow:rgba(0, 0, 0, 0.2) 0px 1px 2px 0px;

@@ -74,7 +74,7 @@
         group = /&Group=(.*)&Password/g.exec(creds)[1]
         document.getElementById("username").innerHTML = group
       }
-      var server = "http://142.93.9.235:8080/"
+      var server = "http://upenn.pennpacapp.com/"
       $http.get(server+"getInfo"+creds).then(function(response){
         $scope.info = response.data
       })
@@ -123,7 +123,7 @@
   </div>
 </section>
 <section class="bdg-sect">
-  <div class="container-width">
+  <!--<div class="container-width">
     <h1 class="bdg-title">The PAC board
       <br/>
     </h1>
@@ -188,7 +188,7 @@
         </div>
       </div>
     </div>
-  </div>
+  </div>-->
 </section>
 <style>* {
   box-sizing: border-box;
