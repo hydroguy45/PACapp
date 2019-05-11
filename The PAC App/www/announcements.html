@@ -80,6 +80,8 @@
       var server = "http://upenn.pennpacapp.com/"
       //console.log("Attempting to connect to "+server+"getInfo"+creds)
       $http.get(server+"getInfo"+creds).then(function(response){
+	console.log("Received Response!")
+	console.log(response);
 	$scope.announcements = response.data.Announcements.sort((a,b)=>{
 		timestampA = Date.parse(a.Date + " " + a.Time)
 		timestampB = Date.parse(b.Date + " " + b.Time)

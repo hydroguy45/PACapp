@@ -72,8 +72,8 @@ function getGroupInfo(subcomittee, groupname, password){
 	if(password != GroupData["Performance Details"]["PAC App password"]){
 		return ["Incorrect Password"]
 	}
-	Deadlines = cachedData.Deadlines + SubComitteeData.Deadlines
-	Announcements = cachedData.Announcements + SubComitteeData.Announcements + GroupData.Announcements
+	Deadlines = cachedData.Deadlines.concat(SubComitteeData.Deadlines)
+	Announcements = cachedData.Announcements.concat(SubComitteeData.Announcements.concat(GroupData.Announcements))
 	Demerits = GroupData.Demerits
 	Persons = GroupData.Persons
 	//console.log(GroupData)
@@ -83,8 +83,8 @@ function getGroupInfo(subcomittee, groupname, password){
 		//console.log(SpaceName)
 		Space = cachedData.Spaces[SpaceName]
 		//console.log(Space)
-		Announcements = Announcements + Space.Announcements
-		Deadlines = Deadlines + Space.Deadlines
+		Announcements = Announcements.concat(Space.Announcements)
+		Deadlines = Deadlines.concat(Space.Deadlines)
 	}
 	ResultData = {}
 	ResultData.Deadlines = Deadlines
@@ -104,7 +104,6 @@ app.get("/getInfo", (req, res)=>{
 	password = req.query.Password
 	infoList = JSON.stringify(getGroupInfo(subcomittee, groupname, password))
 	res.end(infoList)
-
 })
 app.get("/getGroups", (req,res)=>{
 	allGroupsString = JSON.stringify(getGroups())
