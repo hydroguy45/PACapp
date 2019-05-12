@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+
+<head>
+	<title>Line Chart</title>
+	<script src="chart.js"></script>
+	<script src="utils.js"></script>
+	<script src='jquery-3.3.1.js'></script>
+	<script src='paho-1.0.1.js'></script>
+	<script src='script.js'></script>
+	<style>
+	canvas{
+		-moz-user-select: none;
+		-webkit-user-select: none;
+		-ms-user-select: none;
+	}
+	</style>
+</head>
+
+<body>
+	<div style="width:90%;">
+		<canvas id="canvas"></canvas>
+	</div>
+	<br>
+	<br>
+	<div id="tooFast" style="font-size: 30px">
+		Heart beating too FAST!
+	</div>
+	<div id="normalSpeed" style="font-size: 20px">
+		Heart beating normally.
+	</div>
+	<div id="tooSlow" style="font-size: 30px">
+		Heart beating too SLOW!
+	</div>
+	<div id="msgLog">
+	</div>
+	
+	<script>
+		createGraph();
+	</script>
+</body>
+
+</html>
