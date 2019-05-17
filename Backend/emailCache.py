@@ -133,7 +133,7 @@ def getGroupInfo(subcomittee, groupName):
 	return ResultData
 def sendEmailToGroup(message, group):
     recipientList = getEmailRecipientListForGroup(group)
-    SENDER = "thepacapp@gmail.com"
+    SENDER = "pacappbackend@earnest-scene-206222.iam.gserviceaccount.com"
     email = create_message(SENDER, "foleych@seas.upenn.edu", "[PAC APP] Monthly Event Reminder", message)
     send_message(service, "me", email)
     print("TODO: make email send function")
