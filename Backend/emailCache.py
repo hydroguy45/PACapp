@@ -7,13 +7,62 @@ from oauth2client import file, client, tools
 import time
 import json
 import os
+from __future__ import print_function
+import pickle
+import os.path
+from googleapiclient.discovery import build
+from google_auth_oauthlib.flow import InstalledAppFlow
+from google.auth.transport.requests import Request
 
-store = file.Storage('/root/PACapp/Backend/credentials.json')
-creds = store.get()
+SCOPES = ['https://www.googleapis.com/auth/gmail.send']
+flow = InstalledAppFlow.from_client_secrets_file(
+                'credentials.json', SCOPES)
+creds = flow.run_local_server()
+service = build('gmail', 'v1', credentials=creds)
 pp = pprint.PrettyPrinter(indent=4)
 
-cachedData = {}
+#Gmail API Functions
+def create_message(sender, to, subject, message_text):
+  """Create a message for an email.
 
+  Args:
+    sender: Email address of the sender.
+    to: Email address of the receiver.
+    subject: The subject of the email message.
+    message_text: The text of the email message.
+
+  Returns:
+    An object containing a base64url encoded email object.
+  """
+  message = MIMEText(message_text)
+  message['to'] = to
+  message['from'] = sender
+  message['subject'] = subject
+  return {'raw': base64.urlsafe_b64encode(message.as_string())}
+
+def send_message(service, user_id, message):
+  """Send an email message.
+
+  Args:
+    service: Authorized Gmail API service instance.
+    user_id: User's email address. The special value "me"
+    can be used to indicate the authenticated user.
+    message: Message to be sent.
+
+  Returns:
+    Sent Message.
+  """
+  try:
+    message = (service.users().messages().send(userId=user_id, body=message)
+               .execute())
+    print 'Message Id: %s' % message['id']
+    return message
+  except errors.HttpError, error:
+    print 'An error occurred: %s' % error
+
+
+#Cache Parsing Functions
+cachedData = {}
 def loadGroupDataFromCache():
     global cachedData
     raw_json = open("/root/PACapp/Backend/cache.json").read()
@@ -60,6 +109,7 @@ def sendEmailToGroup(message, group):
     print("TODO: make email send function")
 
 if __name__=="__main__":
+    # Call the Gmail API
     for subcomittee in cachedData["Subcomittees"]:
         for groupName in cachedData["Subcomittees"][subcomittee]["Groups"]:
             group = cachedData["Subcomittees"][subcomittee]["Groups"][groupName]
