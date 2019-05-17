@@ -1,24 +1,29 @@
 from __future__ import print_function
-from pprint import pprint
+import pprint
+from google.oauth2 import service_account
 from googleapiclient import discovery
 from apiclient.discovery import build
 from httplib2 import Http
 from oauth2client import file, client, tools
 import time
+import datetime
+from dateutil.tz import gettz
+import dateutil.parser
+import pytz
 import json
 import os
-from __future__ import print_function
 import pickle
 import os.path
 from googleapiclient.discovery import build
-from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
-
+SERVICE_ACCOUNT_FILE = '/root/PACapp/Backend/My Project-80c8a8763136.json'
 SCOPES = ['https://www.googleapis.com/auth/gmail.send']
-flow = InstalledAppFlow.from_client_secrets_file(
-                'credentials.json', SCOPES)
-creds = flow.run_local_server()
-service = build('gmail', 'v1', credentials=creds)
+#flow = InstalledAppFlow.from_client_secrets_file(
+ #               'credentials_email.json', SCOPES)
+credentials = service_account.Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+service = build('gmail', 'v1', credentials=credentials)
+#creds = flow.run_local_server()
+#service = build('gmail', 'v1', credentials=creds)
 pp = pprint.PrettyPrinter(indent=4)
 
 #Gmail API Functions
@@ -55,10 +60,10 @@ def send_message(service, user_id, message):
   try:
     message = (service.users().messages().send(userId=user_id, body=message)
                .execute())
-    print 'Message Id: %s' % message['id']
+    print('Message Id: %s' % message['id'])
     return message
   except errors.HttpError, error:
-    print 'An error occurred: %s' % error
+    print('An error occurred: %s' % error)
 
 
 #Cache Parsing Functions
@@ -69,8 +74,8 @@ def loadGroupDataFromCache():
     cachedData = json.loads(raw_json)
 def getGroupRequiredEventsForGroup(group):
     events = []
-    if group["Details"]["Date (mm/dd/yyyy)"] != "":
-        performance = dateutil.parser.parse(group["Details"]["Date (mm/dd/yyyy)"],tzinfos={None:gettz("America/New_York")})
+    if group["Performance Details"]["Date (mm/dd/yyyy)"] != "":
+        performance = dateutil.parser.parse(group["Performance Details"]["Date (mm/dd/yyyy)"],tzinfos={None:gettz("America/New_York")})
         performance = performance - datetime.timedelta((performance.weekday()+1)%7)
         for dueDate in group["Deadlines"]:
             dateOffset = int(dueDate["When"])
@@ -106,13 +111,16 @@ def getEmailRecipientListForGroup(group):
 
 def sendEmailToGroup(message, group):
     recipientList = getEmailRecipientListForGroup(group)
-    SENDER = ""
+    SENDER = "thepacapp@gmail.com"
     email = create_message(SENDER, "foleych@seas.upenn.edu", "[PAC APP] Monthly Event Reminder", message)
     send_message(service, "me", email)
     print("TODO: make email send function")
 
 if __name__=="__main__":
+    #Load Cache
+    loadGroupDataFromCache()
     # Call the Gmail API
+    pp.pprint(cachedData)
     for subcomittee in cachedData["Subcomittees"]:
         for groupName in cachedData["Subcomittees"][subcomittee]["Groups"]:
             group = cachedData["Subcomittees"][subcomittee]["Groups"][groupName]
