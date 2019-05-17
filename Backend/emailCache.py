@@ -1,5 +1,9 @@
 from __future__ import print_function
 import pprint
+import base64
+from email.mime.text import MIMEText
+import mimetypes
+from apiclient import errors
 from google.oauth2 import service_account
 from googleapiclient import discovery
 from apiclient.discovery import build
@@ -74,8 +78,8 @@ def loadGroupDataFromCache():
     cachedData = json.loads(raw_json)
 def getGroupRequiredEventsForGroup(group):
     events = []
-    if group["Performance Details"]["Date (mm/dd/yyyy)"] != "":
-        performance = dateutil.parser.parse(group["Performance Details"]["Date (mm/dd/yyyy)"],tzinfos={None:gettz("America/New_York")})
+    if group["Details"]["Date (mm/dd/yyyy)"] != "":
+        performance = dateutil.parser.parse(group["Details"]["Date (mm/dd/yyyy)"],tzinfos={None:gettz("America/New_York")})
         performance = performance - datetime.timedelta((performance.weekday()+1)%7)
         for dueDate in group["Deadlines"]:
             dateOffset = int(dueDate["When"])
@@ -87,25 +91,24 @@ def getGroupRequiredEventsForGroup(group):
 
 def formatEmail(group):
     result = str("<html><head></head><body><p><a href=\"https://calendar.google.com/calendar/htmlembed?mode=ADGENDA&src=")
-    result += str(group["Performance Details"]["Preproduction Calendar"])+str("\">Performance  Calendar</a>")
-    result += str("[Performance Deadlines]<br>")
+    result += str(group["Details"]["Preproduction Calendar"])+str("\">Performance  Calendar</a>")
+    result += str("[Deadlines]<br>")
     events = getGroupRequiredEventsForGroup(group)
     for index in events:
-        date = events[index][0]
-        what = events[index][1]
-        results += str(" " )+str(date)+str("<br>")
-        results += str("   ")+str(what)+str("<br>")
-    calendarIframe = group["Performance Details"]["Embedded Calendar Link"]
+        date = index[0]
+        what = index[1]
+        result += str(" " )+str(date)+str("<br>")
+        result += str("   ")+str(what)+str("<br>")
+    calendarIframe = group["Details"]["Embedded Calendar Link"]
     result += str(calendarIframe)
     result += str("</p></body></html>")
     return result
 
 def getEmailRecipientListForGroup(group):
     result = []
-    for index in group["Persons"]:
-        person = group["Persons"][index]
+    for person in group["Persons"]:
         receive = person["Receive Emails"]
-        if receive == "y" or recieve == "Y" or receive == "Yes" or receive == "yes":
+        if receive == "y" or receive == "Y" or receive == "Yes" or receive == "yes":
             result.append(person["Email"])
     return result
    
@@ -142,9 +145,10 @@ if __name__=="__main__":
     #Load Cache
     loadGroupDataFromCache()
     # Call the Gmail API
-    pp.pprint(cachedData)
+    #pp.pprint(cachedData)
     for subcomittee in cachedData["Subcomittees"]:
         for groupName in cachedData["Subcomittees"][subcomittee]["Groups"]:
             group = getGroupInfo(subcomittee, groupName)
+            pp.pprint(group)
             message = formatEmail(group)
             sendEmailToGroup(message, group)
