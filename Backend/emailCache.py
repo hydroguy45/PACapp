@@ -106,6 +106,9 @@ def getEmailRecipientListForGroup(group):
 
 def sendEmailToGroup(message, group):
     recipientList = getEmailRecipientListForGroup(group)
+    SENDER = ""
+    email = create_message(SENDER, "foleych@seas.upenn.edu", "[PAC APP] Monthly Event Reminder", message)
+    send_message(service, "me", email)
     print("TODO: make email send function")
 
 if __name__=="__main__":
