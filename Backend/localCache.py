@@ -10,10 +10,10 @@ import os
 
 # Setup the Sheets API
 SCOPES = 'https://www.googleapis.com/auth/spreadsheets.readonly'
-store = file.Storage('credentials.json')
+store = file.Storage('/root/PACapp/Backend/credentials.json')
 creds = store.get()
 if not creds or creds.invalid:
-	flow = client.flow_from_clientsecrets('client_secret.json', SCOPES)
+	flow = client.flow_from_clientsecrets('/root/PACapp/Backend/client_secret.json', SCOPES)
 	creds = tools.run_flow(flow, store)
 service = discovery.build('sheets', 'v4', credentials=creds)
 spreadsheet_id = '1vGwybPul8-9r-u1Oj_5sHO6RxG-fqyNTTmcU7ajfBd0'
@@ -111,10 +111,10 @@ def getGroupData(name):
 	group = {}
 	#Add group members
 	persons = []
-	rows = getList(name, "A", "D")
+	rows = getList(name, "A", "E")
 	for row in rows:
-		person = {"Name":row[0],"Position":row[1],"Email":row[2],"Expected Year of Graduation":row[3]}
-		persons.append(person)
+            person = {"Name":row[0],"Position":row[1],"Email":row[2],"Expected Year of Graduation":row[3],"Receive Emails":row[4]}
+	    persons.append(person)
 	group["Persons"] = persons
 	#Add group performance details
 	performanceDetails = {}
@@ -205,11 +205,11 @@ def getList(name, lowerEnd, higherEnd, startingRow=2):
 def cacheData():
 	queries = 0
 	PACdata = getPACData()
-	cacheFile = "cache.json"
+	cacheFile = "/root/PACapp/Backend/cache.json"
 	f = open(cacheFile, "w")
 	json.dump(PACdata, f)
 	f.close()
 
 cacheData()
 print("Launching the calendarCache application")
-os.system('python calendarCache.py')
+os.system('/usr/bin/python /root/PACapp/Backend/calendarCache.py')

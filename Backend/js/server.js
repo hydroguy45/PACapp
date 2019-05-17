@@ -70,7 +70,7 @@ function getGroupInfo(subcomittee, groupname, password){
 	SubComitteeData = subcomittees[subcomittee]
 	GroupData = SubComitteeData.Groups[groupname]
 	if(password != GroupData["Performance Details"]["PAC App password"]){
-		return ["Incorrect Password"]
+		return "Incorrect Password"
 	}
 	Deadlines = cachedData.Deadlines.concat(SubComitteeData.Deadlines)
 	Announcements = cachedData.Announcements.concat(SubComitteeData.Announcements.concat(GroupData.Announcements))

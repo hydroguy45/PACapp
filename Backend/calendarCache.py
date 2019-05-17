@@ -13,7 +13,7 @@ import pytz
 # Setup the Calendar API
 cachedData = {}
 SCOPES = ['https://www.googleapis.com/auth/calendar']
-SERVICE_ACCOUNT_FILE = 'My Project-80c8a8763136.json'
+SERVICE_ACCOUNT_FILE = '/root/PACapp/Backend/My Project-80c8a8763136.json'
 credentials = service_account.Credentials.from_service_account_file(
         SERVICE_ACCOUNT_FILE, scopes=SCOPES)
 service = build('calendar', 'v3', credentials=credentials)
@@ -21,7 +21,7 @@ pp = pprint.PrettyPrinter(indent=4)
 
 def loadGroupDataFromCache():
     global cachedData
-    raw_json = open("cache.json").read()
+    raw_json = open("/root/PACapp/Backend/cache.json").read()
     cachedData = json.loads(raw_json)
 
 def getGroupInfo(subcomittee, groupName):
