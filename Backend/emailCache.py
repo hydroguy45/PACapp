@@ -108,7 +108,29 @@ def getEmailRecipientListForGroup(group):
         if receive == "y" or recieve == "Y" or receive == "Yes" or receive == "yes":
             result.append(person["Email"])
     return result
-
+   
+def getGroupInfo(subcomittee, groupName):
+	subcomittees = cachedData["Subcomittees"]
+	SubComitteeData = subcomittees[subcomittee]
+	GroupData = SubComitteeData["Groups"][groupName]
+	Deadlines = cachedData["Deadlines"] + SubComitteeData["Deadlines"]
+	Announcements = cachedData["Announcements"] + SubComitteeData["Announcements"] + GroupData["Announcements"]
+	Demerits = GroupData["Demerits"]
+	Persons = GroupData["Persons"]
+	Details = GroupData["Performance Details"]
+	SpaceName = Details["Location (as seen in sheet tag)"]
+	if(SpaceName != ""):
+		Space = cachedData["Spaces"][SpaceName]
+		Announcements = Announcements + Space["Announcements"]
+		Deadlines = Deadlines + Space["Deadlines"]
+	ResultData = {
+		"Deadlines":Deadlines,
+		"Announcements":Announcements,
+		"Demerits":Demerits,
+		"Persons":Persons,
+		"Details":Details
+	}
+	return ResultData
 def sendEmailToGroup(message, group):
     recipientList = getEmailRecipientListForGroup(group)
     SENDER = "thepacapp@gmail.com"
@@ -123,6 +145,6 @@ if __name__=="__main__":
     pp.pprint(cachedData)
     for subcomittee in cachedData["Subcomittees"]:
         for groupName in cachedData["Subcomittees"][subcomittee]["Groups"]:
-            group = cachedData["Subcomittees"][subcomittee]["Groups"][groupName]
+            group = getGroupInfo(subcomittee, groupName)
             message = formatEmail(group)
             sendEmailToGroup(message, group)
