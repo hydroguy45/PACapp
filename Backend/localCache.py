@@ -9,7 +9,7 @@ import json
 import os
 
 # Setup the Sheets API
-SCOPES = 'https://www.googleapis.com/auth/spreadsheets.readonly'
+SCOPES = 'https://www.googleapis.com/auth/spreadsheets'
 store = file.Storage('/root/PACapp/Backend/credentials.json')
 creds = store.get()
 if not creds or creds.invalid:
@@ -31,6 +31,7 @@ def getPACData():
 		print("Looking at "+row[0])
 		subcomittees[row[0]] = getSubcommitteeData(row[0])
 	pacData["Subcomittees"] = subcomittees
+        pacData["Calendar"] = getList(PACSheet, "L","L")
 	#Announcements
 	print("Loading PAC wide announcements")
 	announcements = []
@@ -89,6 +90,8 @@ def getSubcommitteeData(name):
 		deadline = {"What":row[0],"When":row[1]}
 		deadlines.append(deadline)
 	subcomittee["Deadlines"] = deadlines
+        #Calendar
+        subcomittee["Calendar"] = getList(name,"J","J")
 	#Subcommittee Announcements
 	print(" -Loading announcements")
 	announcements = []
@@ -113,7 +116,7 @@ def getGroupData(name):
 	persons = []
 	rows = getList(name, "A", "E")
 	for row in rows:
-            person = {"Name":row[0],"Position":row[1],"Email":row[2],"Expected Year of Graduation":row[3],"Receive Emails":row[4]}
+            person = {"Name":row[0],"Position":row[1],"Email":row[2],"Expected Year of Graduation":row[3],"Receive Emails":row[4],"Index":row[5]}
 	    persons.append(person)
 	group["Persons"] = persons
 	#Add group performance details
@@ -157,12 +160,15 @@ def getRange(name, lowerEnd, higherEnd, startingRow, endingRow):
 	else:
 		#print('Groups:')
 		#print(len(values))
+                index=-1
 		for row in values:
-			if(len(row) != 0):
+			index = index + 1
+                        if(len(row) != 0):
 				numberOfColumns = ord(higherEnd[0]) -  ord(lowerEnd[0]) + 1
 				while(len(row) < numberOfColumns):
 					row.append("")
-				rows.append(row)
+				row.append(index)
+                                rows.append(row)
 	return rows
 
 def getList(name, lowerEnd, higherEnd, startingRow=2):
@@ -193,17 +199,61 @@ def getList(name, lowerEnd, higherEnd, startingRow=2):
 			else:
 				#print("Potentially more members left")
 				gotAllTheNames = False
-			for row in values:
-				if(len(row) != 0):
+			index = 0
+                        for row in values:
+				index = index + 1
+                                if(len(row) != 0):
 					numberOfColumns = ord(higherEnd[0]) -  ord(lowerEnd[0]) + 1
 					while(len(row) < numberOfColumns):
 						row.append("")
+                                        row.append(index)
 					rows.append(row)
 		rowLowerEnd = rowHigherEnd+1
 	return rows
+def getModifications():
+    modificationFile = "/root/PACapp/Backend/modificationQueue.json"
+    f = open(modificationFile,"rw+")
+    modificationQueue = json.loads(f.read())
+    f.seek(0)
+    f.truncate()
+    f.write("[]")
+    f.close()
+    return modificationQueue
+
+def commitModifications(modificationQueue):
+    for modification in modificationQueue:
+        persons = []
+	rows = getList(modification["groupName"], "A", "E")
+	exists = False
+        for row in rows:
+            person = {"Name":row[0],"Position":row[1],"Email":row[2],"Expected Year of Graduation":row[3],"Receive Emails":row[4]}
+	    persons.append(person)
+            print("Looking at person \"{}\" and index {}".format(row[0],row[5]))
+            if row[0] == modification["personName"] and row[5]==int(modification["index"]):
+                print("Trying to push")
+                field = modification["field"]
+                row="{}".format(int(modification["index"])+1)
+                column = "A" if (field=="Name") else "B" if (field=="Position") else "C" if (field=="Email") else "D" if (field=="Expected Year of Graduation") else "E"
+                range_=modification["groupName"]+'!'+column+row+":"+column+row
+                Body={'values':[[modification['value']]]}
+                queries = queries + 1
+		if queries == 90:
+			time.sleep(100)
+			queries = 0
+                change =  service.spreadsheets().values().update(spreadsheetId=spreadsheet_id, range=range_, valueInputOption="RAW", body=Body)
+                print(change)
+                result = change.execute()
+                print(result)
+                break
+        #TODO: else you need to find the first person with the same name
+    return "Fixed"
 
 def cacheData():
 	queries = 0
+        print("Loading Modifications")
+        modificationQueue = getModifications()
+        print(modificationQueue)
+        commitModifications(modificationQueue)
 	PACdata = getPACData()
 	cacheFile = "/root/PACapp/Backend/cache.json"
 	f = open(cacheFile, "w")

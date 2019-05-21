@@ -3,7 +3,7 @@ var express = require("express");
 var app = express();
 var fs = require("fs");
 var cronJob = require("cron").CronJob;
-
+modifiedQueue = []
 cachedData = {};
 fs.readFile("../cache.json", "utf8", (err, data)=>{
 	if(err) {
@@ -20,6 +20,7 @@ new cronJob("00 00 4 * * *", function(){
 			console.log(err);
 		}
 		cachedData = JSON.parse(data);
+		//TODO: go through modifiedQueue
 		console.log(cachedData);
 	})
 }, null, true);
@@ -94,6 +95,63 @@ function getGroupInfo(subcomittee, groupname, password){
 	ResultData.Details = Details
 	return ResultData
 }
+function modifyRoster(subcomittee, groupName, password, personName, index, field, value, row){
+	group = cachedData.Subcomittees[subcomittee].Groups[groupName]
+	if(password != group["Performance Details"]["PAC App password"]){
+		return "Incorrect Password"
+	}
+	//Fix localCache
+	entry = 0
+	for(i=0;i<group.Persons.length;i++){
+		if(group.Persons[i].Index==index&&group.Persons[i].Name==personName){
+			entry=i;
+			break
+		}
+	}
+	if(group.Persons[entry].Index!=index|| group.Persons[entry].Name!=personName){return "Missing Person"}
+	group.Persons[entry][field] = value
+	console.log("Changing entry "+entry+ " for field "+field+" to value "+value)
+	//Fix on Google
+	modification = {"subcomittee":subcomittee, "groupName":groupName,"password":password,"personName":personName,"index":index,"field":field,"value":value,"timestamp":(new Date(Date.now())).getHours()}
+	fs.readFile("../modificationQueue.json","utf8",(err,res)=>{
+		if(err){
+			console.log(err)
+			return "Failed modification queue read"
+		}
+		queue = JSON.parse(res)
+		updated = false
+		for(i=0; i<queue.length;i++){
+			if(queue[i].groupName==groupName&&queue[i].subcomittee==subcomittee&&queue[i].personName==personName&&queue[i].index==index&&queue[i].field==field){
+				queue[i].value = value
+				updated = true
+			}
+		}
+		if(!updated){
+			queue.push(modification)
+		}
+		fs.writeFile("../modificationQueue.json",JSON.stringify(queue),"utf8",(err,res)=>{
+			if(err){
+				console.log(err)
+				return "Failed modification queue write"
+			}
+		})
+	})	
+	//Maybe add change to queue
+	if(modification.timestamp<=4){
+			modifiedQueue.push(modification)
+	}
+	return "Change in progress"
+}
+app.get("/modifyRoster",(req,res)=>{
+	subcomittee = req.query.Subcomittee
+	groupName = req.query.Group
+	password = req.query.Password
+	personName = req.query.PersonName
+	index = req.query.Index
+	field = req.query.Field
+	value = req.query.Value
+	res.end(modifyRoster(subcomittee, groupName, password, personName, index, field, value))
+})
 app.get("/getPerformances", (req,res)=>{
 	performanceList = JSON.stringify(getPerformances())
 	res.end(performanceList)
