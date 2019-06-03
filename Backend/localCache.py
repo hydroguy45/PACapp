@@ -221,6 +221,7 @@ def getModifications():
     return modificationQueue
 
 def commitModifications(modificationQueue):
+    global queries
     for modification in modificationQueue:
         persons = []
 	rows = getList(modification["groupName"], "A", "E")
@@ -228,23 +229,42 @@ def commitModifications(modificationQueue):
         for row in rows:
             person = {"Name":row[0],"Position":row[1],"Email":row[2],"Expected Year of Graduation":row[3],"Receive Emails":row[4]}
 	    persons.append(person)
-            print("Looking at person \"{}\" and index {}".format(row[0],row[5]))
-            if row[0] == modification["personName"] and row[5]==int(modification["index"]):
-                print("Trying to push")
-                field = modification["field"]
-                row="{}".format(int(modification["index"])+1)
-                column = "A" if (field=="Name") else "B" if (field=="Position") else "C" if (field=="Email") else "D" if (field=="Expected Year of Graduation") else "E"
-                range_=modification["groupName"]+'!'+column+row+":"+column+row
-                Body={'values':[[modification['value']]]}
-                queries = queries + 1
-		if queries == 90:
+            if modification["field"]!="synch":
+                print("Looking at person \"{}\" and index {}".format(row[0],row[5]))
+                if row[0] == modification["personName"] and row[5]==int(modification["index"]):
+                    print("Trying to push")
+                    field = modification["field"]
+                    row="{}".format(int(modification["index"])+1)
+                    column = "A" if (field=="Name") else "B" if (field=="Position") else "C" if (field=="Email") else "D" if (field=="Expected Year of Graduation") else "E"
+                    range_=modification["groupName"]+'!'+column+row+":"+column+row
+                    Body={'values':[[modification['value']]]}
+                    queries = queries + 1
+		    if queries == 90:
 			time.sleep(100)
 			queries = 0
-                change =  service.spreadsheets().values().update(spreadsheetId=spreadsheet_id, range=range_, valueInputOption="RAW", body=Body)
-                print(change)
-                result = change.execute()
-                print(result)
-                break
+                    change =  service.spreadsheets().values().update(spreadsheetId=spreadsheet_id, range=range_, valueInputOption="RAW", body=Body)
+                    print(change)
+                    result = change.execute()
+                    print(result)
+                    break
+        if modification["field"]=="synch":
+            overrideCopy = modification["value"]
+            currentCopyLength = len(persons)
+            overrideCopyLength = len(overrideCopy)
+            row = max(overrideCopyLength, currentCopyLength)
+            range_=modification["groupName"]+"!A2:E"+"{}".format(int(row+1))
+            values = [[x["Name"],x["Position"],x["Email"],x["Expected Year of Graduation"],x["Receive Emails"]] for x in overrideCopy]
+            while len(values) < row:
+                values.append(["","","","",""])
+            Body = {'values':values}
+            queries = queries + 1
+            if queries == 90:
+                time.sleep(100)
+                queries = 0
+            change =  service.spreadsheets().values().update(spreadsheetId=spreadsheet_id, range=range_, valueInputOption="RAW", body=Body)
+            print(change)
+            result = change.execute()
+            print(result)
         #TODO: else you need to find the first person with the same name
     return "Fixed"
 

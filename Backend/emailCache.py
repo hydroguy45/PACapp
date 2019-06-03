@@ -22,6 +22,7 @@ import pickle
 import os.path
 from googleapiclient.discovery import build
 from google.auth.transport.requests import Request
+from email.utils import parseaddr
 DEBUG_MODE = False
 SERVICE_ACCOUNT_FILE = '/root/PACapp/Backend/My Project-80c8a8763136.json'
 SCOPES =['https://www.googleapis.com/auth/gmail.send']
@@ -107,7 +108,7 @@ def getGroupRequiredEventsForGroup(group):
         print("     Missing a performance date")
     return events
 
-def formatEmail(group, groupName):
+def formatEmail(group, groupName, subcomittee):
     result = str("<html><head></head><body><p><h2><a href=\"https://calendar.google.com/calendar/htmlembed?mode=AGENDA&src=")
     result += str(group["Details"]["Preproduction Calendar"])+str("\">Performance  Calendar Upcoming Deadlines</a></h2><br><ul><li>")
     events = getGroupRequiredEventsForGroup(group)
@@ -125,7 +126,8 @@ def formatEmail(group, groupName):
         result += str("<br>  >")+str(what)
     if(len(events)==0):
         result+= "No Upcoming Performance Deadlines"
-    result += "</li></ul>Please remember to check the PAC calendar and your subcomittee's calendar." 
+    result += "</li></ul>Please remember to check the <a href='"+cachedData["Calendar"][0][0]
+    result += "'>PAC calendar</a> and your <a href='"+cachedData["Subcomittees"][subcomittee]["Calendar"][0][0]+"'>subcomittee's calendar</a>." 
     result += "<br><br>You can unsubscribe from these emails by login into the PAC App <a href='https://play.google.com/store/apps/details?id=com.PACapp.demo&pcampaignid=MKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1'>application</a> or "
     result += "<a href='upenn.pennpacapp.com'>website</a> with the username:\""+str(groupName)+"\" and password:\""
     result += group["Details"]["PAC App password"] + "\" and looking under \"Your Group Details\""
@@ -139,7 +141,10 @@ def getEmailRecipientListForGroup(group):
     for person in group["Persons"]:
         receive = person["Receive Emails"]
         if receive == "y" or receive == "Y" or receive == "Yes" or receive == "yes":
-            result.append(person["Email"])
+            theirEmailAddr = parseaddr(person["Email"])[1]
+            if theirEmailAddr != '' and ('@' in theirEmailAddr):
+                print(theirEmailAddr)
+                result.append(theirEmailAddr)
     return result
    
 def getGroupInfo(subcomittee, groupName):
@@ -185,5 +190,5 @@ if __name__=="__main__":
         for groupName in cachedData["Subcomittees"][subcomittee]["Groups"]:
             group = getGroupInfo(subcomittee, groupName)
             #pp.pprint(group)
-            message = formatEmail(group, groupName)
+            message = formatEmail(group, groupName, subcomittee)
             sendEmailToGroup(message, group, groupName)

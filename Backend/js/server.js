@@ -3,7 +3,6 @@ var express = require("express");
 var app = express();
 var fs = require("fs");
 var cronJob = require("cron").CronJob;
-modifiedQueue = []
 cachedData = {};
 fs.readFile("../cache.json", "utf8", (err, data)=>{
 	if(err) {
@@ -20,7 +19,6 @@ new cronJob("00 00 4 * * *", function(){
 			console.log(err);
 		}
 		cachedData = JSON.parse(data);
-		//TODO: go through modifiedQueue
 		console.log(cachedData);
 	})
 }, null, true);
@@ -136,12 +134,79 @@ function modifyRoster(subcomittee, groupName, password, personName, index, field
 			}
 		})
 	})	
-	//Maybe add change to queue
-	if(modification.timestamp<=4){
-			modifiedQueue.push(modification)
-	}
 	return "Change in progress"
 }
+function synchRoster(subcomittee, groupName, password, personName, index){
+	//Fix on Google
+	value = cachedData.Subcomittees[subcomittee].Groups[groupName].Persons
+	modification = {"subcomittee":subcomittee, "groupName":groupName,"password":password,"personName":personName,"index":index,"field":"synch","value":value,"timestamp":(new Date(Date.now())).getHours()}
+	fs.readFile("../modificationQueue.json","utf8",(err,res)=>{
+		if(err){
+			console.log(err)
+			return "Failed modification queue read"
+		}
+		queue = JSON.parse(res)
+		for(i=0; i<queue.length;i++){
+			if(queue[i].groupName==groupName&&queue[i].subcomittee==subcomittee){
+				queue.splice(i,1)
+				i--
+			}
+		}
+		queue.push(modification)
+		fs.writeFile("../modificationQueue.json",JSON.stringify(queue),"utf8",(err,res)=>{
+			if(err){
+				console.log(err)
+				return "Failed modification queue write"
+			}
+		})
+	})	
+	return "Change in progress"
+}
+
+function addToRoster(subcomittee, groupName, password, personName, index){
+	if(cachedData.Subcomittees[subcomittee].Groups[groupName]["Performance Details"]["PAC App password"]!=password){
+		return "Incorrect Password"
+	}
+	console.log("Adding "+personName+" to "+groupName+"'s roster")
+	newPerson = {"Email":"","Expected Year of Graduation":"","Index":cachedData.Subcomittees[subcomittee].Groups[groupName].Persons.length+1,"Name":personName,"Position":"General Group Member","Receive Emails":"no"}
+	cachedData.Subcomittees[subcomittee].Groups[groupName].Persons.push(newPerson)
+	return synchRoster(subcomittee, groupName, password, personName, index)
+}
+
+function deleteFromRoster(subcomittee, groupName, password, personName, index){
+	if(cachedData.Subcomittees[subcomittee].Groups[groupName]["Performance Details"]["PAC App password"]!=password){
+		return "Incorrect Password"
+	}
+	console.log("Deleting "+personName+" from "+groupName+"'s roster")
+	removed = false
+	for(i=0;i<cachedData.Subcomittees[subcomittee].Groups[groupName].Persons.length;i++){
+		if(personName==cachedData.Subcomittees[subcomittee].Groups[groupName].Persons[i].Name){
+			cachedData.Subcomittees[subcomittee].Groups[groupName].Persons.splice(i,1)
+			removed = true
+		}
+		if(removed&&(i<cachedData.Subcomittees[subcomittee].Groups[groupName].Persons.length)){
+			cachedData.Subcomittees[subcomittee].Groups[groupName].Persons[i].Index--
+		}
+	}
+	return synchRoster(subcomittee, groupName, password, personName, index)
+}
+app.get("/synchRoster",(req,res)=>{
+	subcomittee = req.query.Subcomittee
+	groupName = req.query.Group
+	password = req.query.Password
+	personName = req.query.PersonName
+	index = req.query.Index
+	mode = req.query.Mode
+	if(mode=="add"){
+		res.end(addToRoster(subcomittee, groupName, password, personName, index))
+	}
+	else if(mode=="delete"){
+		res.end(deleteFromRoster(subcomittee, groupName, password, personName, index))
+	} else {
+		res.end("Invalid mode")
+	}
+	
+})
 app.get("/modifyRoster",(req,res)=>{
 	subcomittee = req.query.Subcomittee
 	groupName = req.query.Group
