@@ -49,6 +49,7 @@
 <section class="flex-sect">
   <div class="container-width">
   <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.min.js"></script>
+  <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular-sanitize.js"></script> 
   <script>
     function getCookie(cname) {
       var name = cname + "=";
@@ -65,8 +66,119 @@
       }
       return "";
     }
-    var app = angular.module('myApp',{})
-    app.controller('myCtrl', function($scope, $http){
+    scope = {}
+    responseInformation = {}
+    var app = angular.module('myApp',['ngSanitize'])
+    app.controller('myCtrl', function($scope, $http, $sce){
+      scopeVar = $scope
+      $scope.editor = false
+      $scope.openEditor = function(index){
+	$scope.editor = true
+	$scope.editIndex = index
+	$scope.editPerson = $scope.info.Persons[index]
+      	$scope.$apply();
+	console.log("Opening editor for "+index)
+	console.log($scope.editPerson.Name)
+      }
+      $scope.reloadPersonList = function(){
+      	var server = "http://upenn.pennpacapp.com/"
+      	$http.get(server+"getInfo"+creds).then(function(response){
+        $scope.info = response.data
+	for(i=0; i<response.data.Persons.length; i++){
+		subscription = (response.data.Persons[i]["Receive Emails"] == "yes")
+		subButton = "<button onClick='scopeVar.modifySubscription("+i+")'>"
+		subButton += (subscription)? "Unsubscribe": "Subscribe"
+		subButton += "</button>"
+		$scope.info.Persons[i].Subscription = subButton
+		console.log("Edit Button")
+		editButton = "<span onClick='scopeVar.openEditor("+i+")'>&#9881</span>"
+		$scope.info.Persons[i].Edit = editButton
+		removeButton = "<button onClick='scopeVar.removePerson("+i+",\""+response.data.Persons[i].Name+"\")'>Delete Member</button>"
+		$scope.info.Persons[i].Remove = removeButton
+	}
+	//$scope.editPerson = $scope.info.Persons[0]
+	responseInformation = $scope.info
+	//$scope.$apply()
+	//document.location.reload(true)
+	})
+      }
+      $scope.addPerson = function(personName){
+      	console.log("Adding "+personName)
+      	modification = getCookie("creds")+"&PersonName="+personName+"&Index=0&Mode=add"
+		      $http.get(server+"synchRoster"+modification).then(function(response){
+			      $scope.reloadPersonList()
+			      console.log(response.data)
+	      })
+
+      }
+      $scope.removePerson = function(index, personName){
+	if($scope.info.Persons[index].Name != personName){
+		return "No"
+	}
+      	console.log("Removing "+personName)
+      	modification = getCookie("creds")+"&PersonName="+$scope.info.Persons[index].Name+"&Index="+$scope.info.Persons[index].Index+"&Mode=delete"
+		      $http.get(server+"synchRoster"+modification).then(function(response){
+			      $scope.reloadPersonList()
+			      console.log(response.data)
+	      })
+
+      }
+      $scope.modifyField = function(index, field, value){
+     	console.log("Updating "+field+" for "+$scope.info.Persons[index].Name+" to "+value+" from "+$scope.info.Persons[index][field])
+	 modification = getCookie("creds")+"&PersonName="+$scope.info.Persons[index].Name+"&Index="+$scope.info.Persons[index].Index+"&Field="+field+"&Value="+value
+		      $http.get(server+"modifyRoster"+modification).then(function(response){
+			      if(response.data=="Change in progress"){
+				$scope.info.Persons[index][field] = value
+			      }
+			      console.log(response.data)
+	      })
+
+      }
+      $scope.saveEditor = function(){
+	      $scope.editPosition = document.getElementsByName("editPosition")[0].value
+	      $scope.editEmail = document.getElementsByName("editEmail")[0].value
+	      $scope.editYear = document.getElementsByName("editYear")[0].value
+	      if($scope.editPosition != $scope.info.Persons[$scope.editIndex].Position){
+	      	//Update Position
+		$scope.modifyField($scope.editIndex,"Position",$scope.editPosition)
+	      }
+	      if($scope.editEmail != $scope.info.Persons[$scope.editIndex].Email){
+	      	//Update Email
+
+		 $scope.modifyField($scope.editIndex,"Email",$scope.editEmail)
+	      }
+	      if($scope.editYear != $scope.info.Persons[$scope.editIndex]["Expected Year of Graduation"]){
+	      	//Update Year
+		 $scope.modifyField($scope.editIndex,"Expected Year of Graduation",$scope.editYear)
+	      }
+	$scope.exitEditor()
+      }
+      $scope.exitEditor = function(){
+      	$scope.editor = false
+	$scope.$apply()
+      }
+      $scope.modifySubscription = function(index){
+    	console.log("Modifying "+index)
+	personName = responseInformation.Persons[index].Name
+	Index = responseInformation.Persons[index].Index
+	value = (responseInformation.Persons[index]["Receive Emails"] =="yes")?"no":"yes"
+	modification = getCookie("creds")+"&PersonName="+personName+"&Index="+Index+"&Field=Receive Emails&Value="+value
+		      $http.get(server+"modifyRoster"+modification).then(function(response){
+			      if(response.data=="Change in progress"){
+				responseInformation.Persons[index]["Receive Emails"] = (responseInformation.Persons[index]["Receive Emails"] =="yes")?"no":"yes"
+			        subscription = (responseInformation.Persons[index]["Receive Emails"] == "yes")
+				subButton = "<button onClick='scopeVar.modifySubscription("+index+")'>"
+				subButton += (subscription)? "Unsubscribe": "Subscribe"
+				subButton += "</button>"
+				$scope.info.Persons[index].Subscription = subButton
+			      }
+			      console.log(response)
+			      alert("This subscription box only applies to the montly PAC-App pre-production reminders. It does not apply to the PACrep and subcomittee listservs. Please contact your subcomittee chairs to subscribe or unsubscribe from those.");
+		      })
+      }
+      $scope.SkipValidation = function(html){
+  	return $sce.trustAsHtml(html);
+      }
       creds = getCookie("creds")
       if(creds == ""){
         alert("Please log in. The app will not work properly if you aren't logged in.")
@@ -77,12 +189,43 @@
       var server = "http://upenn.pennpacapp.com/"
       $http.get(server+"getInfo"+creds).then(function(response){
         $scope.info = response.data
+	for(i=0; i<response.data.Persons.length; i++){
+		subscription = (response.data.Persons[i]["Receive Emails"] == "yes")
+		subButton = "<button onClick='scopeVar.modifySubscription("+i+")'>"
+		subButton += (subscription)? "Unsubscribe": "Subscribe"
+		subButton += "</button>"
+		$scope.info.Persons[i].Subscription = subButton
+		console.log("Edit Button")
+		editButton = "<span onClick='scopeVar.openEditor("+i+")'>&#9881</span>"
+		$scope.info.Persons[i].Edit = editButton
+		removeButton = "<button onClick='scopeVar.removePerson("+i+",\""+response.data.Persons[i].Name+"\")'>Delete Member</button>"
+		$scope.info.Persons[i].Remove = removeButton
+	}
+	//$scope.editPerson = $scope.info.Persons[0]
+	responseInformation = $scope.info
       })
     })
+	function promptForNewPerson(){
+		name = prompt("What's the name of your new member?")
+		console.log(name)
+		if(name!="null"){
+			console.log("Adding")
+			scopeVar.addPerson(name)
+		}
+	}
   </script>
   <!--TODO: incorporate the details about the performance-->
 	  <div  class="cards" ng-app="myApp" ng-controller='myCtrl'>
-      <div class="card">
+		  <div id="opaque" ng-if="editor"></div>
+		  <div id="editor" ng-if="editor" class="card">
+			  Editing <span ng-bind="editPerson.Name"></span><br>
+			  Position: <input size="28" type="text" name="editPosition" ng-value="editPerson.Position"/><br>
+			  Email: <input size="30" type="email" ng-value="editPerson.Email" name="editEmail"/><br>
+			  Graduation Year: <input type="number" ng-value="editPerson['Expected Year of Graduation']" name="editYear"/><br>
+			<button onClick="scopeVar.saveEditor()">Save & Exit</button><br>
+			<button onClick="scopeVar.exitEditor()">Exit</button>
+		  </div>
+		  <div class="card">
   			<div class="card-body">
 				<div class="card-title"><h3>Semester Performance</h3>{{info.Details["Performance title"]}}
   				<br/>
@@ -98,20 +241,16 @@
 		  </div>
       <div class="card">
   			<div class="card-body">
-				<div class="card-title"><h3> Group Roster</h3>
-  				<br/>
-  			  </div>
+				<div class="card-title"><h3> Group Roster  <button onClick='promptForNewPerson()'>Add Member</button></h3>
+  				<br>
+  			  </div> 
   			  <div class="card-desc">
-            <table>
-              <tr>
-                <th>Name</th>
-                <th>Position</th>
-              </tr>
-              <tr ng-repeat="person in info.Persons">
-                <td>{{person.Name}}</td>
-                <td>{{person.Position}}</td>
-              </tr>
-            </table>
+              <div class="person" ng-repeat="person in info.Persons">
+		      <span><strong>{{person.Name}} ({{person["Expected Year of Graduation"]}})</strong>:</span><div style="display:inline-block"> {{person.Position}} 	<span ng-bind-html="SkipValidation(person.Edit)"></span></div><br>	
+		<span ng-bind-html="SkipValidation(person.Subscription)"></span>
+		{{person.Email}}<br>
+		<span ng-bind-html="SkipValidation(person.Remove)"></span>
+	      </div>
   			  </div>
   			</div>
 		  </div>
@@ -196,6 +335,22 @@
   body {
     margin: 0;
   }
+  #opaque{
+  	position: fixed;
+	top: 0px;
+	left: 0px;
+	width: 100%;
+	height: 100%;
+	z-index: 1000;
+	background-color: black;
+	filter: alpha(opacity=30);
+	opacity: 0.3;
+  }
+  #editor{
+    padding: 4px 4px 4px 4px;
+    position: fixed;
+    z-index: 1001;
+  }
   .container-width{
     width:90%;
     max-width:1150px;
@@ -247,6 +402,14 @@
     font-weight:100;
     overflow-x:hidden;
     overflow-y:hidden;
+  }
+  .person{
+  	border-style: solid;
+	border-width: 1px;
+	border-radius: 2px;
+	border-color: DarkGrey;
+  	margin-bottom: 20px;
+	padding: 2px 2px 2px 2px;
   }
   .card:hover{
     margin-top:-5px;
